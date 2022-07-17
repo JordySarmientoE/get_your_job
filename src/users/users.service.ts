@@ -4,21 +4,25 @@ import { ICommon } from '../common/common.interfaces';
 import { User } from './user.entity';
 import { CreateUserDTO, UpdateUserDTO } from './user.dto';
 import * as bcrypt from 'bcrypt';
+import { RoleService } from '../role/role.service';
+import { RolesEnum } from '../role/role.interfaces';
 
 @Injectable()
 export class UsersService {
-    constructor(@Inject(ICommon.PHOTO_REPOSITORY) private userRepository: Repository<User>) { }
+    constructor(@Inject(ICommon.PHOTO_REPOSITORY) private userRepository: Repository<User>, private roleService: RoleService) { }
 
-    async findAll(): Promise<User[]> {
+    async findAll() {
         try {
-            return this.userRepository.find();
+            return this.userRepository.find({
+                relations: ['role']
+            });
         }
         catch (error) {
             throw new InternalServerErrorException();
         }
     }
 
-    async findOne(id: number): Promise<User> {
+    async findOne(id: number) {
         try {
             const user = await this.userRepository.findOne({
                 where: {
@@ -34,12 +38,13 @@ export class UsersService {
         }
     }
 
-    async create(payload: CreateUserDTO): Promise<User> {
+    async create(payload: CreateUserDTO, role: RolesEnum) {
         try {
             if (await this.findByEmail(payload.email)) {
                 throw new BadGatewayException(`Email ${payload.email} has been taken`);
             }
             const newUser = this.userRepository.create(payload);
+            newUser.role = await this.roleService.findOne(role);
             const hashPassword = await bcrypt.hash(newUser.password, 10);
             newUser.password = hashPassword;
             return await this.userRepository.save(newUser)
@@ -55,7 +60,8 @@ export class UsersService {
             const user = await this.userRepository.findOne({
                 where: {
                     email
-                }
+                },
+                relations: ['role']
             });
             return user;
         }
@@ -65,9 +71,15 @@ export class UsersService {
     }
 
     async update(payload: UpdateUserDTO, id: number) {
-        const user = await this.findOne(id);
-        this.userRepository.merge(user, payload);
-        return await this.userRepository.save(user)
+        try {
+            const user = await this.findOne(id);
+            this.userRepository.merge(user, payload);
+            return await this.userRepository.save(user)
+        }
+        catch (error) {
+            if (error.status) throw error;
+            throw new InternalServerErrorException();
+        }
     }
 
     async delete(id: number) {

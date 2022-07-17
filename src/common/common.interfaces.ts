@@ -1,7 +1,8 @@
 export enum ICommon {
     DATA_SOURCE = 'DATA_SOURCE',
     DATABASE = 'postgres',
-    PHOTO_REPOSITORY = 'PHOTO_REPOSITORY'
+    PHOTO_REPOSITORY = 'PHOTO_REPOSITORY',
+    ROLE_REPOSITORY = 'ROLE_REPOSITORY'
 }
 
 export interface IUserExpress {

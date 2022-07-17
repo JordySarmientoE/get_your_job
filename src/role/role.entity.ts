@@ -1,19 +1,18 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, ManyToOne } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { Role } from '../role/role.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { User } from '../users/user.entity';
 @Entity()
-export class User {
+export class Role {
     @PrimaryGeneratedColumn()
     id: number;
     @Column({ type: 'varchar', length: 255, unique: true })
-    email: string;
+    name: string;
     @Exclude()
-    @Column({ type: 'varchar', length: 255 })
-    password: string;
-    @ManyToOne(() => Role, (role) => role.users)
-    role: Role;
     @CreateDateColumn({ name: 'create_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     createAt: Date;
+    @Exclude()
     @UpdateDateColumn({ name: 'update_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     updateAt: Date;
+    @OneToMany(() => User, (role) => role.role)
+    users: User[];
 }

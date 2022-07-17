@@ -7,6 +7,8 @@ import { Role } from '../auth/models/roles.model';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Request } from 'express';
 import { IUserExpress } from 'src/common/common.interfaces';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { RolesEnum } from 'src/role/role.interfaces';
 
 @Controller('users')
 @ApiTags('users')
@@ -14,8 +16,8 @@ export class UsersController {
 
     constructor(private userService: UsersService) { }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
-    @UseGuards(JwtAuthGuard)
     @Get()
     @ApiOperation({ summary: 'List users' })
     async findAll() {
@@ -37,6 +39,7 @@ export class UsersController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
     @Get(':id')
     @ApiOperation({ summary: 'List user' })
@@ -47,12 +50,32 @@ export class UsersController {
         }
     }
 
-    @Post()
-    @ApiOperation({ summary: 'Create user' })
-    async create(@Body() payload: CreateUserDTO) {
+    @Post('professional')
+    @ApiOperation({ summary: 'Create user professional' })
+    async createProfessional(@Body() payload: CreateUserDTO) {
         return {
-            msg: 'Create user',
-            data: await this.userService.create(payload)
+            msg: 'Create user professional',
+            data: await this.userService.create(payload, RolesEnum.PROFESSIONAL)
+        }
+    }
+
+    @Post('employer')
+    @ApiOperation({ summary: 'Create user employer' })
+    async createEmployer(@Body() payload: CreateUserDTO) {
+        return {
+            msg: 'Create user employer',
+            data: await this.userService.create(payload, RolesEnum.EMPLOYER)
+        }
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @Post('admin')
+    @ApiOperation({ summary: 'Create user admin' })
+    async createAdmin(@Body() payload: CreateUserDTO) {
+        return {
+            msg: 'Create user admin',
+            data: await this.userService.create(payload, RolesEnum.ADMIN)
         }
     }
 
@@ -68,8 +91,8 @@ export class UsersController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
-    @UseGuards(JwtAuthGuard)
     @Delete(':id')
     @ApiOperation({ summary: 'Delete user' })
     async deleteUser(@Param('id', ParseIntPipe) id: number) {

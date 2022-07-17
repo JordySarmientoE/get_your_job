@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PayloadToken } from '../models/token.model';
 import { UsersService } from '../../users/users.service';
 import { User } from '../../users/user.entity';
+import { LoginDTO } from '../dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,10 +19,11 @@ export class AuthService {
         return null;
     }
 
-    generateJWT(user: User) {
-        const payload: PayloadToken = { role: user.role, sub: user.id };
+    async generateJWT(payload: LoginDTO) {
+        const user = await this.userService.findByEmail(payload.email)
+        const payloadToken: PayloadToken = { role: user.role.name, sub: user.id };
         return {
-            access_token: this.jwtService.sign(payload),
+            access_token: this.jwtService.sign(payloadToken),
             user
         }
     }
