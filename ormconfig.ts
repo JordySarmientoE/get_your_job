@@ -12,7 +12,7 @@ export const dataSource = new DataSource({
     logging: false,
     synchronize: false,
     name: 'default',
-    entities: ['src/**/**.entity{.ts,.js}'],
+    entities: ['src/**/entities/**.entity{.ts,.js}'],
     migrations: ['src/migrations/**/*{.ts,.js}'],
     subscribers: ['src/subscriber/**/*{.ts,.js}'],
 });
